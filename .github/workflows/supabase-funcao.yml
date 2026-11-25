@@ -1,0 +1,42 @@
+name: Publicar assistente de voz (Supabase Edge Function)
+
+# Publica supabase/functions/imobiliario-ia no projeto Supabase sempre que a função mudar
+# (ou manualmente pela aba Actions). Precisa dos secrets:
+#   SUPABASE_ACCESS_TOKEN  → supabase.com > Account > Access Tokens
+#   ANTHROPIC_API_KEY      → console.anthropic.com > API Keys (opcional aqui: só para gravar o segredo da função)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['supabase/functions/**']
+
+env:
+  PROJETO: eoowbybfrbmjxcjfniuu
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir token
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: |
+          echo "::warning::Secret SUPABASE_ACCESS_TOKEN não configurado: a função não foi publicada. Veja docs/SUPABASE.md."
+
+      - uses: supabase/setup-cli@v1
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        with:
+          version: latest
+
+      - name: Gravar a chave da Anthropic na função
+        if: env.SUPABASE_ACCESS_TOKEN != '' && env.ANTHROPIC_API_KEY != ''
+        run: supabase secrets set ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --project-ref "$PROJETO"
+
+      - name: Publicar imobiliario-ia
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: supabase functions deploy imobiliario-ia --project-ref "$PROJETO" --use-api

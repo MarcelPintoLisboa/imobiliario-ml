@@ -1,0 +1,34 @@
+{
+  "name": "imobiliario-ml-desktop",
+  "productName": "Imobiliário ML",
+  "version": "1.0.0",
+  "description": "Imobiliário ML para Windows",
+  "author": "ML Softwares",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "web": "cd .. && npx expo export --platform web --output-dir desktop/app",
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --publish never"
+  },
+  "build": {
+    "appId": "com.imobiliarioml.desktop",
+    "productName": "Imobiliário ML",
+    "artifactName": "imobiliario-ml-${version}-windows.${ext}",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "app/**/*", "build/icon.png"],
+    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Imobiliário ML"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  }
+}
