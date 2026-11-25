@@ -35,6 +35,9 @@ O script pode ser rodado de novo sem problema. Ele cria:
 
 ## 2. Assistente de voz (Edge Function `imobiliario-ia`)
 
+> **Sem a função publicada (ou sem chave/crédito/internet), o app continua funcionando:** ele organiza a
+> fala no próprio aparelho, com regras simples (`src/lib/organizadorLocal.ts`), e avisa que usou o modo básico.
+
 O corretor fala; o próprio celular transcreve (reconhecimento de voz do Android/iOS, em português) e a
 função [`supabase/functions/imobiliario-ia`](../supabase/functions/imobiliario-ia/index.ts) usa o Claude
 (Anthropic) para organizar o texto nos campos do imóvel ou do cliente e escrever o texto de anúncio.

@@ -69,6 +69,17 @@ export const faseAnterior = (n: Pick<Negocio, 'tipo' | 'fase'>): Fase | null => 
 
 export const ativo = (n: Negocio) => n.fase !== 'concluido' && n.fase !== 'perdido';
 
+/** Valor do negócio: o negociado ou, sem ele, o anunciado (venda → preço; aluguel → aluguel mensal) */
+export const valorNegocio = (n: Pick<Negocio, 'valor' | 'tipo'>, i?: Imovel) =>
+  n.valor ?? (n.tipo === 'venda' ? i?.preco_venda : i?.valor_aluguel) ?? 0;
+
+/** Fase para onde volta um atendimento concluído/perdido ao ser reaberto (a última fase ativa dele) */
+export const faseAoReabrir = (n: Negocio): Fase => {
+  const f = fluxo(n.tipo);
+  const ultima = [...(n.historico ?? [])].reverse().find((h) => f.includes(h.fase));
+  return ultima?.fase ?? 'primeiro_contato';
+};
+
 export const DOCUMENTOS_VENDA = [
   'RG e CPF dos compradores', 'Comprovante de estado civil', 'Comprovante de residência', 'Comprovante de renda',
   'Matrícula atualizada do imóvel', 'Certidões negativas do vendedor', 'Certidão negativa de IPTU',

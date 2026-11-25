@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { CampoData } from '../../components/CampoData';
 import { Seletor } from '../../components/Seletor';
@@ -38,11 +38,25 @@ export default function EditarAgendamento() {
   const [clienteId, setClienteId] = useState<string | null>(original?.cliente_id ?? (p.cliente || null));
   const [imovelId, setImovelId] = useState<string | null>(original?.imovel_id ?? (p.imovel || null));
   const negocioId = original?.negocio_id ?? (p.negocio || null);
-  const [local, setLocal] = useState(original?.local ?? (p.imovel ? enderecoImovel(imovel(p.imovel)!, true) : ''));
+  const [local, setLocal] = useState(() => {
+    if (original) return original.local;
+    const im = imovel(p.imovel);
+    return im ? enderecoImovel(im, true) : '';
+  });
   const [lembrete, setLembrete] = useState(original?.lembrete_min ?? 60);
   const [status, setStatus] = useState<StatusAgendamento>(original?.status ?? 'agendado');
   const [notas, setNotas] = useState(original?.notas ?? '');
   const [salvando, setSalvando] = useState(false);
+
+  // cliente cadastrado a partir desta tela: já fica selecionado ao voltar
+  const idsAntes = useRef(new Set(clientes.map((c) => c.id)));
+  useEffect(() => {
+    const novo = clientes.find((c) => !idsAntes.current.has(c.id));
+    if (novo) {
+      idsAntes.current.add(novo.id);
+      setClienteId(novo.id);
+    }
+  }, [clientes]);
 
   const escolherImovel = (id: string | null) => {
     setImovelId(id);

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Imobiliário ML",
     "slug": "imobiliario-ml",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -59,7 +59,7 @@
         {
           "photosPermission": "O app usa suas fotos para montar o portfólio dos imóveis e a logo da imobiliária.",
           "cameraPermission": "O app usa a câmera para fotografar os imóveis durante a captação.",
-          "microphonePermission": false
+          "microphonePermission": "O app usa o microfone para você descrever o imóvel por voz."
         }
       ],
       [

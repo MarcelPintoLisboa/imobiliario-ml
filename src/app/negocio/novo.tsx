@@ -38,6 +38,16 @@ export default function NovoNegocio() {
     }
   }, [clientes]);
 
+  // imóvel captado a partir desta tela: já fica selecionado ao voltar
+  const imoveisAntes = useRef(new Set(imoveis.map((i) => i.id)));
+  useEffect(() => {
+    const novo = imoveis.find((i) => !imoveisAntes.current.has(i.id));
+    if (novo) {
+      imoveisAntes.current.add(novo.id);
+      setImovelId(novo.id);
+    }
+  }, [imoveis]);
+
   const c = cliente(clienteId);
   const opcoesImovel = useMemo(
     () =>
@@ -98,7 +108,7 @@ export default function NovoNegocio() {
             opcional
             placeholder={opcoesImovel.length ? 'Escolher do portfólio (opcional)' : 'Nenhum imóvel para este tipo'}
             opcoes={opcoesImovel}
-            novo={{ label: 'Captar imóvel', onPress: () => router.push('/imovel/editar') }}
+            novo={{ label: 'Captar imóvel', onPress: () => router.push({ pathname: '/imovel/editar', params: { voltar: '1' } }) }}
           />
           <Campo label={tipo === 'venda' ? 'Valor do negócio (R$)' : 'Aluguel negociado (R$)'} value={valor} onChangeText={setValor} keyboardType="decimal-pad" placeholder="Opcional" />
           <Rotulo>Começar na fase</Rotulo>

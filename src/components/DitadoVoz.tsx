@@ -3,6 +3,7 @@ import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-spe
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import { Animated, Easing, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import type { Organizado } from '../lib/ia';
 import { mensagemErro } from '../lib/supabase';
 import { colors, gradiente, radius } from '../theme';
 import { Botao, toque } from './ui';
@@ -28,7 +29,7 @@ export function DitadoVoz<T>({
   modo, organizar, aoOrganizar, textoInicial = '',
 }: {
   modo: 'imovel' | 'cliente';
-  organizar: (texto: string) => Promise<T>;
+  organizar: (texto: string) => Promise<Organizado<T>>;
   aoOrganizar: (dados: T, texto: string) => void;
   textoInicial?: string;
 }) {
@@ -36,6 +37,7 @@ export function DitadoVoz<T>({
   const [parcial, setParcial] = useState('');
   const [gravando, setGravando] = useState(false);
   const [processando, setProcessando] = useState(false);
+  const [aviso, setAviso] = useState('');
   const [erro, setErro] = useState('');
   const [semVoz, setSemVoz] = useState(() => {
     try {
@@ -117,10 +119,16 @@ export function DitadoVoz<T>({
       return;
     }
     setErro('');
+    setAviso('');
     setProcessando(true);
     try {
-      const dados = await organizar(final);
-      aoOrganizar(dados, final);
+      const r = await organizar(final);
+      aoOrganizar(r.dados, final);
+      setAviso(
+        r.semIA
+          ? `Organizado no modo básico, sem IA (${r.motivo ?? 'assistente indisponível'}). Confira os campos e complete o que faltar.`
+          : 'Organizado pelo assistente com IA. Revise os campos antes de salvar.',
+      );
     } catch (e) {
       setErro(mensagemErro(e));
     } finally {
@@ -142,8 +150,8 @@ export function DitadoVoz<T>({
         </View>
         <Text style={st.ajuda}>
           {semVoz
-            ? `Digite ou cole a descrição abaixo${desktopWindows ? ' — ou use o ditado do Windows: clique na caixa e aperte Win + H' : ''}. O assistente organiza tudo nos campos.`
-            : 'Toque no microfone e fale naturalmente. O assistente organiza tudo nos campos para você revisar.'}
+            ? `Digite ou cole a descrição abaixo${desktopWindows ? ' — ou use o ditado do Windows: clique na caixa e aperte Win + H' : ''}. O app organiza tudo nos campos.`
+            : 'Toque no microfone e fale naturalmente. O app organiza tudo nos campos para você revisar.'}
         </Text>
 
         <View style={st.corpo}>
@@ -178,13 +186,14 @@ export function DitadoVoz<T>({
         </View>
 
         {!!erro && <Text style={st.erro}>{erro}</Text>}
+        {!!aviso && !erro && <Text style={st.aviso}>{aviso}</Text>}
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
           {!!texto && !gravando && (
             <Botao label="Limpar" icon="trash-outline" variante="fantasma" compacto onPress={() => setTexto('')} />
           )}
           <Botao
-            label={processando ? 'Organizando…' : 'Organizar com IA'}
+            label={processando ? 'Organizando…' : 'Organizar campos'}
             icon="sparkles"
             onPress={enviar}
             carregando={processando}
@@ -213,4 +222,5 @@ const st = StyleSheet.create({
     color: colors.text, padding: 12, fontSize: 15, lineHeight: 22, textAlignVertical: 'top',
   },
   erro: { color: colors.critical, marginTop: 10, fontSize: 13 },
+  aviso: { color: colors.textSec, marginTop: 10, fontSize: 13, lineHeight: 18 },
 });

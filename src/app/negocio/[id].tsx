@@ -7,7 +7,7 @@ import { Avatar, Badge, Botao, BotaoIcone, Card, Chips, Titulo, toque, Vazio } f
 import { useAvancarFase } from '../../lib/acoes';
 import { useDesktop, useMargem } from '../../lib/desktop';
 import {
-  ativo, documentosPadrao, enderecoImovel, faseAnterior, FASES, fluxo, MOTIVOS_PERDA, precoPrincipal, proximaFase, TIPOS_AGENDAMENTO,
+  ativo, documentosPadrao, enderecoImovel, faseAnterior, faseAoReabrir, FASES, fluxo, MOTIVOS_PERDA, precoPrincipal, proximaFase, TIPOS_AGENDAMENTO,
   tituloImovel,
 } from '../../lib/dominio';
 import { fmtDataHora, fmtMoeda, fmtTelefone, linkWhatsApp, numParaCampo, parseNumero } from '../../lib/format';
@@ -139,7 +139,7 @@ export default function DetalheNegocio() {
                 style={{ flex: 1 }}
               />
             )}
-            {!ativo(n) && <Botao label="Reabrir atendimento" icon="refresh" onPress={() => tentar(() => moverFase(n, ant ?? 'primeiro_contato', 'Reaberto'))} style={{ flex: 1 }} />}
+            {!ativo(n) && <Botao label="Reabrir atendimento" icon="refresh" onPress={() => tentar(async () => { const r = await moverFase(n, faseAoReabrir(n), 'Reaberto'); if (n.motivo_perda) await salvarNegocio({ id: r.id, motivo_perda: '' }); })} style={{ flex: 1 }} />}
           </View>
           {ativo(n) && !perdendo && (
             <Pressable onPress={() => setPerdendo(true)} style={{ alignSelf: 'center', marginTop: 12 }}>

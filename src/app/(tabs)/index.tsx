@@ -7,7 +7,7 @@ import { Marca } from '../../components/Marca';
 import { Avatar, Card, emHover, type IconName, Metrica, Titulo, Vazio } from '../../components/ui';
 import { useConta } from '../../lib/conta';
 import { useDesktop, useMargem } from '../../lib/desktop';
-import { ativo, FASES, FASES_ATIVAS, TIPOS_AGENDAMENTO, tituloImovel } from '../../lib/dominio';
+import { ativo, FASES, FASES_ATIVAS, TIPOS_AGENDAMENTO, tituloImovel, valorNegocio } from '../../lib/dominio';
 import { diasEntre, fmtHora, fmtMoedaCurta, linkWhatsApp, mesmoDia, primeiroNome, saudacao } from '../../lib/format';
 import { useDados } from '../../lib/store';
 import { colors, radius } from '../../theme';
@@ -33,7 +33,7 @@ export default function Inicio() {
       ativos,
       deHoje,
       emNegociacao,
-      vgv: emNegociacao.reduce((s, n) => s + (n.valor ?? imovel(n.imovel_id)?.preco_venda ?? 0), 0),
+      vgv: emNegociacao.filter((n) => n.tipo === 'venda').reduce((s, n) => s + valorNegocio(n, imovel(n.imovel_id)), 0),
       parados,
       fechadosMes: mes.length,
       disponiveis: imoveis.filter((i) => i.status === 'disponivel').length,

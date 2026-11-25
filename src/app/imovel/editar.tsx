@@ -35,7 +35,7 @@ const listaDe = (s: string) => s.split(/[,;\n]/).map((x) => x.trim()).filter(Boo
 const novoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
 export default function EditarImovel() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, voltar } = useLocalSearchParams<{ id?: string; voltar?: string }>();
   const { imovel, salvarImovel, excluirImovel } = useDados();
   const { dono } = useConta();
   const margem = useMargem();
@@ -134,7 +134,7 @@ export default function EditarImovel() {
       // fotos removidas na edição saem do armazenamento
       const removidas = (original?.fotos ?? []).filter((o) => !f.fotos.some((x) => x.path === o.path)).map((o) => o.path);
       apagarFotos(removidas).catch(() => {});
-      if (id) router.back();
+      if (id || voltar) router.back();
       else router.replace({ pathname: '/imovel/[id]', params: { id: salvo.id } });
     } catch (e) {
       Alert.alert('Não foi possível salvar', mensagemErro(e));
@@ -169,7 +169,7 @@ export default function EditarImovel() {
         {preenchidoIA && (
           <View style={st.aviso}>
             <Ionicons name="checkmark-circle" size={18} color={colors.good} />
-            <Text style={st.avisoTxt}>Campos preenchidos pelo assistente. Revise antes de salvar.</Text>
+            <Text style={st.avisoTxt}>Campos preenchidos a partir da sua fala. Revise antes de salvar.</Text>
           </View>
         )}
 

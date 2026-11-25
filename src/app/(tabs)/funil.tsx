@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, Busca, CabecalhoTela, Chips, emHover, Fab, Vazio } from '../../components/ui';
 import { useAvancarFase } from '../../lib/acoes';
 import { useDesktop, useMargem } from '../../lib/desktop';
-import { FASES, FASES_ATIVAS, fluxo, proximaFase, tituloImovel } from '../../lib/dominio';
+import { FASES, FASES_ATIVAS, fluxo, proximaFase, tituloImovel, valorNegocio } from '../../lib/dominio';
 import { diasEntre, fmtMoedaCurta, semAcento } from '../../lib/format';
 import { useDados } from '../../lib/store';
 import type { Fase, Negocio } from '../../lib/types';
@@ -20,6 +20,11 @@ export default function Funil() {
   const desktop = useDesktop();
   const margem = useMargem();
   const [faseSel, setFaseSel] = useState<Fase>(params.fase ?? 'primeiro_contato');
+  const [faseParam, setFaseParam] = useState(params.fase);
+  if (params.fase !== faseParam) {
+    setFaseParam(params.fase);
+    if (params.fase) setFaseSel(params.fase);
+  }
   const [tipo, setTipo] = useState<Filtro>('todos');
   const [q, setQ] = useState('');
   const [atualizando, setAtualizando] = useState(false);
@@ -73,7 +78,7 @@ export default function Funil() {
           {colunas.map((f) => {
             const lista = porFase(f);
             const cfg = FASES[f];
-            const total = lista.reduce((s, n) => s + (n.valor ?? imovel(n.imovel_id)?.preco_venda ?? 0), 0);
+            const total = lista.filter((n) => n.tipo === 'venda').reduce((s, n) => s + valorNegocio(n, imovel(n.imovel_id)), 0);
             return (
               <View key={f} style={st.coluna}>
                 <View style={[st.colTopo, { borderTopColor: cfg.color }]}>
@@ -176,7 +181,7 @@ function CartaoNegocio({ n }: { n: Negocio }) {
       )}
       <View style={st.rodape}>
         <Text style={[st.tipo, { color: n.tipo === 'venda' ? colors.cyan : colors.pink }]}>{n.tipo === 'venda' ? 'Venda' : 'Aluguel'}</Text>
-        {!!(n.valor ?? im?.preco_venda) && <Text style={st.valor}>{fmtMoedaCurta(n.valor ?? (n.tipo === 'venda' ? im?.preco_venda : im?.valor_aluguel))}</Text>}
+        {valorNegocio(n, im) > 0 && <Text style={st.valor}>{fmtMoedaCurta(valorNegocio(n, im))}{n.tipo === 'aluguel' ? '/mês' : ''}</Text>}
         <Text style={[st.dias, dias >= 5 && { color: colors.warning }]}>{dias === 0 ? 'hoje' : `${dias}d`}</Text>
       </View>
     </Pressable>

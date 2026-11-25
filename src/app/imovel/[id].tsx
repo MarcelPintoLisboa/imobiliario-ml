@@ -44,7 +44,15 @@ export default function DetalheImovel() {
   const alturaFoto = desktop ? 420 : Math.round(width * 0.72);
   const assinatura = [empresa.nome, empresa.creci && `CRECI ${empresa.creci}`, empresa.telefone].filter(Boolean).join(' · ');
 
-  const compartilhar = () => Share.share({ message: textoCompartilhar(i, assinatura), title: tituloImovel(i) });
+  const compartilhar = () => {
+    const texto = textoCompartilhar(i, assinatura);
+    // no desktop/navegador não há a folha de compartilhar do celular: abre o WhatsApp com o texto
+    if (Platform.OS === 'web') {
+      Linking.openURL(`https://wa.me/?text=${encodeURIComponent(texto)}`);
+      return;
+    }
+    Share.share({ message: texto, title: tituloImovel(i) }).catch(() => {});
+  };
   const abrirMapa = () => {
     const q = encodeURIComponent(enderecoImovel(i, true).replace(/ · /g, ', '));
     Linking.openURL(Platform.OS === 'ios' ? `http://maps.apple.com/?q=${q}` : `https://www.google.com/maps/search/?api=1&query=${q}`);
