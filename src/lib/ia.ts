@@ -45,11 +45,14 @@ export interface ClienteExtraido {
 async function chamar<T>(modo: 'imovel' | 'cliente', texto: string): Promise<T> {
   const { data, error } = await supabase.functions.invoke('imobiliario-ia', { body: { modo, texto } });
   if (error) {
+    let naoPublicada = /Failed to send|not found|404/i.test(error.message);
     if (error instanceof FunctionsHttpError) {
-      const corpo = await error.context.json().catch(() => null);
+      const resp = error.context as Response;
+      const corpo = await resp.json().catch(() => null);
       if (corpo?.erro) throw new Error(corpo.erro);
+      if (resp.status === 404 || corpo?.code === 'NOT_FOUND') naoPublicada = true;
     }
-    if (/Failed to send|not found|404/i.test(error.message)) {
+    if (naoPublicada) {
       throw new Error('O assistente de voz ainda não foi publicado no Supabase (Edge Function imobiliario-ia). Veja docs/SUPABASE.md.');
     }
     throw error;

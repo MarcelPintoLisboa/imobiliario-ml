@@ -26,17 +26,20 @@ jobs:
       - name: Conferir token
         if: env.SUPABASE_ACCESS_TOKEN == ''
         run: |
-          echo "::warning::Secret SUPABASE_ACCESS_TOKEN não configurado: a função não foi publicada. Veja docs/SUPABASE.md."
+          echo "::error::Secret SUPABASE_ACCESS_TOKEN não configurado: a função NÃO foi publicada. Crie o secret (supabase.com > Account > Access Tokens) e rode de novo. Veja docs/SUPABASE.md."
+          exit 1
+
+      - name: Conferir chave da Anthropic
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "::warning::Secret ANTHROPIC_API_KEY não configurado aqui. Se a chave ainda não foi gravada direto no Supabase (Edge Functions > Secrets), o assistente vai responder que falta a chave."
 
       - uses: supabase/setup-cli@v1
-        if: env.SUPABASE_ACCESS_TOKEN != ''
         with:
           version: latest
 
       - name: Gravar a chave da Anthropic na função
-        if: env.SUPABASE_ACCESS_TOKEN != '' && env.ANTHROPIC_API_KEY != ''
+        if: env.ANTHROPIC_API_KEY != ''
         run: supabase secrets set ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --project-ref "$PROJETO"
 
       - name: Publicar imobiliario-ia
-        if: env.SUPABASE_ACCESS_TOKEN != ''
         run: supabase functions deploy imobiliario-ia --project-ref "$PROJETO" --use-api
